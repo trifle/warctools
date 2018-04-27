@@ -156,7 +156,7 @@ def rx(pat):
     """Helper to compile regexps with IGNORECASE option set."""
     return re.compile(pat, flags=re.IGNORECASE)
 
-version_rx = rx(br'^(?P<prefix>.*?)(?P<version>\s*WARC/(?P<number>.*?))'
+version_rx = rx(br'^(?P<prefix>.*?)(?P<version>\s*W?A?R?C?/(?P<number>.*?))'
                 b'(?P<nl>\r\n|\r|\n)\\Z')
 # a header is key: <ws> value plus any following lines with leading whitespace
 header_rx = rx(br'^(?P<name>.*?):\s?(?P<value>.*?)' b'(?P<nl>\r\n|\r|\n)\\Z')
@@ -219,8 +219,9 @@ class WarcParser(ArchiveParser):
                 record.error('incorrect newline in version', match.group('nl'))
 
             if match.group('number') not in self.KNOWN_VERSIONS:
+                print(line)
                 record.error('version field is not known (%s)'
-                             % (",".join(self.KNOWN_VERSIONS)),
+                             % (",".join((str(v) for v in self.KNOWN_VERSIONS))),
                              match.group('number'))
 
             prefix = match.group('prefix')

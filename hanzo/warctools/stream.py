@@ -116,6 +116,9 @@ class RecordStream(object):
         while self.bytes_to_eoc > 0:
             read_size = min(CHUNK_SIZE, self.bytes_to_eoc)
             buf = self._read(read_size)
+            if b"WARC/1.0" in buf:
+                offset = self.fh.tell()
+                raise Exception('HEADER IN CHUNK?\n{} at'.format(buf, offset))
             if len(buf) < read_size:
                 raise Exception('expected {} bytes but only read {}'.format(read_size, len(buf)))
 
@@ -129,6 +132,9 @@ class RecordStream(object):
         if self.bytes_to_eoc is not None:
             self.bytes_to_eoc -= len(result)
 
+        if b"WARC/1.0" in result:
+            offset = self.fh.tell()
+            raise Exception('HEADER IN CHUNK?\n{} at'.format(result, offset))
         return result
 
     def read(self, count=None):
